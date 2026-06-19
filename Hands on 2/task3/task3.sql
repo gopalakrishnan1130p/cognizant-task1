@@ -148,3 +148,41 @@ UNION ALL
 SELECT 'Final Courses Count', COUNT(*) FROM courses
 UNION ALL
 SELECT 'Final Enrollments Count', COUNT(*) FROM enrollments;
+SELECT * FROM students 
+WHERE enrollment_year = 2027 
+ORDER BY first_name ASC;
+SELECT * FROM courses 
+WHERE credits > 3 
+ORDER BY credits DESC;
+SELECT * FROM professors 
+WHERE salary BETWEEN 80000 AND 95000;
+SELECT * FROM students 
+WHERE email LIKE '%@gmail.com';
+SELECT enrollment_year, COUNT(*) AS total_students
+FROM students
+GROUP BY enrollment_year;
+SELECT 
+    CONCAT(s.first_name, ' ', s.last_name) AS student_full_name,
+    d.dept_name
+FROM students s
+INNER JOIN departments d ON s.department_id = d.department_id;
+SELECT 
+    e.enrollment_id,
+    CONCAT(s.first_name, ' ', s.last_name) AS student_name,
+    c.course_name
+FROM enrollments e
+INNER JOIN students s ON e.student_id = s.student_id
+INNER JOIN courses c ON e.course_id = c.course_id;
+SELECT 
+    s.student_id,
+    CONCAT(s.first_name, ' ', s.last_name) AS student_name
+FROM students s
+LEFT JOIN enrollments e ON s.student_id = e.student_id
+WHERE e.enrollment_id IS NULL;
+
+SELECT 
+    d.dept_name,
+    p.prof_name,
+    p.salary
+FROM departments d
+LEFT JOIN professors p ON d.department_id = p.department_id;

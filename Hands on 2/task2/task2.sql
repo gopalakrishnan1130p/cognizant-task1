@@ -148,3 +148,16 @@ UNION ALL
 SELECT 'Final Courses Count', COUNT(*) FROM courses
 UNION ALL
 SELECT 'Final Enrollments Count', COUNT(*) FROM enrollments;
+SELECT * FROM students 
+WHERE enrollment_year = 2027 
+ORDER BY first_name ASC;
+SELECT * FROM courses 
+WHERE credits > 3 
+ORDER BY credits DESC;
+SELECT * FROM professors 
+WHERE salary BETWEEN 80000 AND 95000;
+SELECT * FROM students 
+WHERE email LIKE '%@gmail.com';
+SELECT enrollment_year, COUNT(*) AS total_students
+FROM students
+GROUP BY enrollment_year;
