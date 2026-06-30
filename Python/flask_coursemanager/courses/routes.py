@@ -1,77 +1,113 @@
-from flask import Blueprint, jsonify, request, abort
-
-courses_bp = Blueprint('courses', __name__, url_prefix='/api/courses')
-
-COURSES = []
+from flask import Blueprint, jsonify, request
 
 
-def make_response_json(data, status_code):
-    return jsonify({'status': 'success', 'data': data}), status_code
-
-
-def get_course_or_404(course_id):
-    for course in COURSES:
-        if course['id'] == course_id:
-            return course
-    abort(404, description=f'Course with id {course_id} not found')
-
-
-@courses_bp.get('/')
-def list_courses():
-    return make_response_json(COURSES, 200)
-
-
-@courses_bp.post('/')
-def create_course():
-    data = request.get_json(silent=True)
-    if data is None:
-        return jsonify({'status': 'error', 'message': 'Request body must be valid JSON'}), 400
-
-    required_fields = ['name', 'code', 'credits']
-    missing_fields = [field for field in required_fields if field not in data or data[field] in (None, '')]
-    if missing_fields:
-        return jsonify({'status': 'error', 'message': f"Missing required fields: {', '.join(missing_fields)}"}), 400
-
-    course = {
-        'id': len(COURSES) + 1,
-        'name': data.get('name'),
-        'code': data.get('code'),
-        'credits': data.get('credits'),
+def api_response(success, message, data=None, status_code=200):
+    response = {
+        "success": success,
+        "message": message,
+        "data": data
     }
-    COURSES.append(course)
-    return make_response_json(course, 201)
+    return jsonify(response), status_code
 
 
-@courses_bp.get('/<int:course_id>/')
-def get_course(course_id):
-    course = get_course_or_404(course_id)
-    return make_response_json(course, 200)
+courses_bp = Blueprint(
+    "courses",
+    __name__,
+    url_prefix="/api/courses"
+)
+
+# Temporary in-memory storage
+courses = []
 
 
-@courses_bp.put('/<int:course_id>/')
-def update_course(course_id):
-    course = get_course_or_404(course_id)
-    data = request.get_json(silent=True)
-    if data is None:
-        return jsonify({'status': 'error', 'message': 'Request body must be valid JSON'}), 400
-
-    required_fields = ['name', 'code', 'credits']
-    missing_fields = [field for field in required_fields if field not in data or data[field] in (None, '')]
-    if missing_fields:
-        return jsonify({'status': 'error', 'message': f"Missing required fields: {', '.join(missing_fields)}"}), 400
-
-    course.update(
-        {
-            'name': data['name'],
-            'code': data['code'],
-            'credits': data['credits'],
-        }
+@courses_bp.route("/", methods=["GET"])
+def get_courses():
+    return api_response(
+        True,
+        "Courses retrieved successfully",
+        courses,
+        200
     )
-    return make_response_json(course, 200)
 
 
-@courses_bp.delete('/<int:course_id>/')
+@courses_bp.route("/", methods=["POST"])
+def add_course():
+    data = request.get_json()
+    required_fields = [
+        "name",
+        "code",
+        "credits"
+    ]
+    for field in required_fields:
+        if field not in data:
+            return api_response(
+                False,
+                f"{field} is required",
+                None,
+                400
+            )
+    data["id"] = len(courses) + 1
+    courses.append(data)
+    return api_response(
+        True,
+        "Course created successfully",
+        data,
+        201
+    )
+
+
+@courses_bp.route("/<int:course_id>", methods=["GET"])
+def get_course(course_id):
+    for course in courses:
+        if course["id"] == course_id:
+            return api_response(
+                True,
+                "Course retrieved successfully",
+                course,
+                200
+            )
+    return api_response(
+        False,
+        "Course not found",
+        None,
+        404
+    )
+
+
+@courses_bp.route("/<int:course_id>", methods=["PUT"])
+def update_course(course_id):
+    data = request.get_json()
+    for course in courses:
+        if course["id"] == course_id:
+            course.update(data)
+            return api_response(
+                True,
+                "Course updated successfully",
+                course,
+                200
+            )
+    return api_response(
+        False,
+        "Course not found",
+        None,
+        404
+    )
+
+
+@courses_bp.route("/<int:course_id>", methods=["DELETE"])
 def delete_course(course_id):
-    course = get_course_or_404(course_id)
-    COURSES.remove(course)
-    return make_response_json({'message': 'Course deleted successfully'}, 200)
+    for course in courses:
+        if course["id"] == course_id:
+            courses.remove(course)
+            return api_response(
+                True,
+                "Course deleted successfully",
+                None,
+                200
+            )
+    return api_response(
+        False,
+        "Course not found",
+        None,
+        404
+    )

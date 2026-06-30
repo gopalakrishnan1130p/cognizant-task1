@@ -1,5 +1,5 @@
-# ASGI entry point for async-capable servers and long-lived connections.
 """
+# asgi.py - Entry point for asynchronous deployment using ASGI servers.
 ASGI config for coursemanager project.
 
 It exposes the ASGI callable as a module-level variable named ``application``.

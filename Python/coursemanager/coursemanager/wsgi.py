@@ -1,5 +1,5 @@
-# WSGI entry point for traditional synchronous Django deployments.
 """
+# wsgi.py - Entry point for deploying Django using WSGI servers.
 WSGI config for coursemanager project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
